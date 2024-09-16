@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Nick\'s Calculator', // Title of the app
+      title: 'Nick\'s Calculator',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -34,19 +34,15 @@ class _MyHomePageState extends State<MyHomePage> {
   void _onPressed(String value) {
     setState(() {
       if (value == 'C') {
-        // Clear functionality
         input = '';
         result = '0';
       } else if (value == '=') {
-        // Evaluate expression
         try {
           final expression = Expression.parse(input);
           final evaluator = const ExpressionEvaluator();
           var evalResult = evaluator.eval(expression, {});
-
-          // Handle division by zero
           if (evalResult.toString() == 'Infinity' || evalResult.toString() == '-Infinity') {
-            result = 'Error'; // Show Error for division by zero
+            result = 'Error'; // Handle division by zero
           } else {
             result = evalResult.toString();
           }
@@ -54,22 +50,26 @@ class _MyHomePageState extends State<MyHomePage> {
           result = 'Error'; // Handle invalid expression
         }
       } else {
-        input += value; // Append the input
+        input += value;
       }
     });
   }
 
   Widget buildButton(String value, {Color? color}) {
     return Expanded(
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
+      child: OutlinedButton(
+        style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.all(24),
-          backgroundColor: color ?? Colors.grey[300],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(0), // Rectangular shape
+          ),
+          side: const BorderSide(color: Colors.grey), // Outline/stroke color
+          backgroundColor: color ?? Colors.white, // Background color of buttons
         ),
         onPressed: () => _onPressed(value),
         child: Text(
           value,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold), // Bold and more visible text
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -79,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your Name\'s Calculator'), // Title on the calculator screen
+        title: const Text('Nick\'s Calculator'),
       ),
       body: Column(
         children: [
@@ -88,7 +88,7 @@ class _MyHomePageState extends State<MyHomePage> {
               padding: const EdgeInsets.all(16),
               alignment: Alignment.bottomRight,
               child: Text(
-                '$input = $result', // Display the input expression and result
+                '$input = $result',
                 style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
             ),
@@ -101,7 +101,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   buildButton('7'),
                   buildButton('8'),
                   buildButton('9'),
-                  buildButton('/', color: Colors.lightBlueAccent), // Operation button
                 ],
               ),
               Row(
@@ -109,7 +108,6 @@ class _MyHomePageState extends State<MyHomePage> {
                   buildButton('4'),
                   buildButton('5'),
                   buildButton('6'),
-                  buildButton('*', color: Colors.lightBlueAccent), // Operation button
                 ],
               ),
               Row(
@@ -117,15 +115,22 @@ class _MyHomePageState extends State<MyHomePage> {
                   buildButton('1'),
                   buildButton('2'),
                   buildButton('3'),
-                  buildButton('-', color: Colors.lightBlueAccent), // Operation button
                 ],
               ),
               Row(
                 children: [
-                  buildButton('C', color: Colors.redAccent), // Clear button on the bottom left
+                  buildButton('C', color: Colors.redAccent),
                   buildButton('0'),
-                  buildButton('=', color: Colors.lightBlueAccent), // Equals button on the bottom right
-                  buildButton('+', color: Colors.lightBlueAccent), // Operation button
+                  buildButton('=', color: Colors.lightBlueAccent),
+                ],
+              ),
+              Row(
+                children: [
+                  buildButton('%', color: Colors.lightBlueAccent),
+                  buildButton('/', color: Colors.lightBlueAccent),
+                  buildButton('*', color: Colors.lightBlueAccent),
+                  buildButton('-', color: Colors.lightBlueAccent),
+                  buildButton('+', color: Colors.lightBlueAccent),
                 ],
               ),
             ],
