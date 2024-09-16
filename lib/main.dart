@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:expressions/expressions.dart'; // External package for expression evaluation
 
 void main() {
   runApp(const MyApp());
@@ -10,10 +11,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Nick's Currency Converter",
+      title: 'Nick\'s Calculator', // Title of the app
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(),
     );
@@ -28,110 +28,109 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController _amountController = TextEditingController();
-  String _fromCurrency = 'USD';
-  String _toCurrency = 'EUR';
-  String _result = '';
-  
-  // Hardcoded exchange rates for simplicity
-  final Map<String, double> _exchangeRates = {
-    'USD': 1.0,
-    'EUR': 0.85,
-    'GBP': 0.75,
-    'JPY': 110.0,
-  };
+  String input = ''; // Stores the user input expression
+  String result = '0'; // Stores the result or current calculation
 
-  void _convert() {
-    double amount = double.tryParse(_amountController.text) ?? 0.0;
-    double fromRate = _exchangeRates[_fromCurrency] ?? 1.0;
-    double toRate = _exchangeRates[_toCurrency] ?? 1.0;
-    double convertedAmount = (amount / fromRate) * toRate;
+  void _onPressed(String value) {
     setState(() {
-      _result = convertedAmount.toStringAsFixed(2);
+      if (value == 'C') {
+        // Clear functionality
+        input = '';
+        result = '0';
+      } else if (value == '=') {
+        // Evaluate expression
+        try {
+          final expression = Expression.parse(input);
+          final evaluator = const ExpressionEvaluator();
+          var evalResult = evaluator.eval(expression, {});
+
+          // Handle division by zero
+          if (evalResult.toString() == 'Infinity' || evalResult.toString() == '-Infinity') {
+            result = 'Error'; // Show Error for division by zero
+          } else {
+            result = evalResult.toString();
+          }
+        } catch (e) {
+          result = 'Error'; // Handle invalid expression
+        }
+      } else {
+        input += value; // Append the input
+      }
     });
   }
 
-  void _clear() {
-    setState(() {
-      _amountController.clear();
-      _result = '';
-    });
+  Widget buildButton(String value, {Color? color}) {
+    return Expanded(
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.all(24),
+          backgroundColor: color ?? Colors.grey[300],
+        ),
+        onPressed: () => _onPressed(value),
+        child: Text(
+          value,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold), // Bold and more visible text
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Currency Converter'),
+        title: const Text('Your Name\'s Calculator'), // Title on the calculator screen
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Enter amount',
-                border: OutlineInputBorder(),
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              alignment: Alignment.bottomRight,
+              child: Text(
+                '$input = $result', // Display the input expression and result
+                style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                DropdownButton<String>(
-                  value: _fromCurrency,
-                  items: _exchangeRates.keys.map((String currency) {
-                    return DropdownMenuItem<String>(
-                      value: currency,
-                      child: Text(currency),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _fromCurrency = newValue!;
-                    });
-                  },
-                ),
-                const Icon(Icons.swap_horiz),
-                DropdownButton<String>(
-                  value: _toCurrency,
-                  items: _exchangeRates.keys.map((String currency) {
-                    return DropdownMenuItem<String>(
-                      value: currency,
-                      child: Text(currency),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _toCurrency = newValue!;
-                    });
-                  },
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _convert,
-              child: const Text('Convert'),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              _result.isEmpty ? 'Converted amount will appear here' : 'Result: $_result $_toCurrency',
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _clear,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+          ),
+          const Divider(),
+          Column(
+            children: [
+              Row(
+                children: [
+                  buildButton('7'),
+                  buildButton('8'),
+                  buildButton('9'),
+                  buildButton('/', color: Colors.lightBlueAccent), // Operation button
+                ],
               ),
-              child: const Text('Clear'),
-            ),
-          ],
-        ),
+              Row(
+                children: [
+                  buildButton('4'),
+                  buildButton('5'),
+                  buildButton('6'),
+                  buildButton('*', color: Colors.lightBlueAccent), // Operation button
+                ],
+              ),
+              Row(
+                children: [
+                  buildButton('1'),
+                  buildButton('2'),
+                  buildButton('3'),
+                  buildButton('-', color: Colors.lightBlueAccent), // Operation button
+                ],
+              ),
+              Row(
+                children: [
+                  buildButton('C', color: Colors.redAccent), // Clear button on the bottom left
+                  buildButton('0'),
+                  buildButton('=', color: Colors.lightBlueAccent), // Equals button on the bottom right
+                  buildButton('+', color: Colors.lightBlueAccent), // Operation button
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
